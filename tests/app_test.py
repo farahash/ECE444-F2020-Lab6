@@ -1,7 +1,7 @@
 import pytest
 import os
 from pathlib import Path
-from project.app import app, db
+from project.app import app, db, login_required
 import json
 
 
@@ -38,11 +38,12 @@ def test_index(client):
     assert response.status_code == 200
 
 def test_search(client):
+    """Ensure search returns correct results"""
     test_messages(client)
     response = client.get("/search", content_type="html/text", query_string={'query': 'Hello'}, follow_redirects=True)
-    assert response.status_code == 200
     assert b"&lt;Hello&gt;" in response.data
     assert b"<strong>HTML</strong> allowed here" in response.data
+    assert response.status_code == 200
 
 def test_database(client):
     """initial test. ensure that the database exists"""
@@ -81,6 +82,10 @@ def test_messages(client):
 
 def test_delete_message(client):
     """Ensure the messages are being deleted"""
-    rv = client.get('/delete/1')
+    rv = client.get("/delete/1")
+    data = json.loads(rv.data)
+    assert data["status"] == 0
+    login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    rv = client.get("/delete/1")
     data = json.loads(rv.data)
     assert data["status"] == 1
