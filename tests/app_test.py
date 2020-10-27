@@ -37,6 +37,12 @@ def test_index(client):
     response = client.get("/", content_type="html/text")
     assert response.status_code == 200
 
+def test_search(client):
+    test_messages(client)
+    response = client.get("/search", content_type="html/text", query_string={'query': 'Hello'}, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"&lt;Hello&gt;" in response.data
+    assert b"<strong>HTML</strong> allowed here" in response.data
 
 def test_database(client):
     """initial test. ensure that the database exists"""
