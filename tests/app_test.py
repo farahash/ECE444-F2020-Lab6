@@ -1,11 +1,11 @@
 import pytest
-import os
 from pathlib import Path
-from project.app import app, db, login_required
+from project.app import app, db
 import json
 
 
 TEST_DB = "test.db"
+
 
 @pytest.fixture
 def client():
@@ -37,13 +37,20 @@ def test_index(client):
     response = client.get("/", content_type="html/text")
     assert response.status_code == 200
 
+
 def test_search(client):
     """Ensure search returns correct results"""
     test_messages(client)
-    response = client.get("/search", content_type="html/text", query_string={'query': 'Hello'}, follow_redirects=True)
+    response = client.get(
+        "/search",
+        content_type="html/text",
+        query_string={"query": "Hello"},
+        follow_redirects=True,
+    )
     assert b"&lt;Hello&gt;" in response.data
     assert b"<strong>HTML</strong> allowed here" in response.data
     assert response.status_code == 200
+
 
 def test_database(client):
     """initial test. ensure that the database exists"""
@@ -68,6 +75,7 @@ def test_login_logout(client):
     rv = login(client, app.config["USERNAME"], app.config["PASSWORD"] + "x")
     assert b"Invalid password" in rv.data
 
+
 def test_messages(client):
     """Ensure that user can post messages"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
@@ -79,6 +87,7 @@ def test_messages(client):
     assert b"No entries here so far" not in rv.data
     assert b"&lt;Hello&gt;" in rv.data
     assert b"<strong>HTML</strong> allowed here" in rv.data
+
 
 def test_delete_message(client):
     """Ensure the messages are being deleted"""
